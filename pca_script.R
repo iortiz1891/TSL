@@ -1,15 +1,14 @@
 
 #Libraries
-install.packages(c("FactoMineR", "factoextra", "ggplot2"))
 library("FactoMineR") # para an?lisis de datos
 library("factoextra") # para visualizaci?n de gr?ficos, basado en ggplot2
 library(ggplot2) #para hacer gr?ficos
 
 #Data
-BC<-read.table("2004indicadores.csv", header=TRUE, sep="\t", dec=".")
+db<-read.table("2004indicadores.csv", header= T, sep=",", dec=".")
 dim(BC)
 BC[1:5,]
-names(db)
+names(BC)
 dbok<- na.omit(db)
 BCnum<-as.data.frame(dbok[ ,2:8])
 
