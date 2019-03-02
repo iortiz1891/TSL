@@ -1,3 +1,11 @@
+install.packages("dplyr")
+install.packages("ggplot2")
+install.packages("dendextend")
+install.packages("purrr")
+install.packages("cluster")
+
+
+
 library(dplyr)
 library(ggplot2)
 library(dendextend)
@@ -5,11 +13,17 @@ library(purrr)
 library(cluster)
 
 #DATA
-setwd("~/Dropbox/tsl-project/TSL")
-db<-read.table("2004indicadores.csv", header= T, sep=",", dec=".")
-names(db)
-dbok<- na.omit(db)
-db1scaled<-as.data.frame(scale(dbok[ ,2:8]))
+X[is.na(X)] <- 0
+dbok <- X
+db1scaled<-as.data.frame(dbok[ ,2:98])
+p<-colSums(dbok[ ,2:98])
+for (i in range(1,97)) {
+
+  db1scaled[,i]<-  db1scaled[,i]/p [i]
+  
+}
+
+colSums(db1scaled)
 
 
 ##Hierarchical clustering
@@ -18,9 +32,9 @@ hc_complete<-hclust(distances, method="complete")
 hc_single<-hclust(distances, method="single")
 hc_average<-hclust(distances, method="average")
 
-plot(hc_complete,labels=dbok$country, main = 'Complete Linkage', cex=0.5)
-plot(hc_single, labels=dbok$country, main = 'Single Linkage', cex=0.5)
-plot(hc_average, labels=dbok$country, main = 'Average Linkage', cex=0.5) 
+plot(hc_complete,labels=dbok$q1_AG2.reporter, main = 'Complete Linkage', cex=0.5)
+plot(hc_single, labels=dbok$q1_AG2.reporter, main = 'Single Linkage', cex=0.5)
+plot(hc_average, labels=dbok$q1_AG2.reporter, main = 'Average Linkage', cex=0.5) 
 dend<- as.dendrogram(hc_complete)
 dend_coloredz<- color_branches (dend, h=2)
 par(mfrow = c(1,1))
