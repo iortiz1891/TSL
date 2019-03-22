@@ -1,9 +1,12 @@
-
+#install.packages(FactoMineR) 
+#install.packages(factoextra) # para visualizaci?n de gr?ficos, basado en ggplot2
+#install.packages(ggplot2)
+#-------------------
 #Libraries
-library("FactoMineR") # para an?lisis de datos
-library("factoextra") # para visualizaci?n de gr?ficos, basado en ggplot2
-library(ggplot2) #para hacer gr?ficos
-
+library("FactoMineR") 
+library("factoextra") 
+library(ggplot2) 
+#-------------------
 #Data
 db<-read.table("2004indicadores.csv", header= T, sep=",", dec=".")
 dim(BC)

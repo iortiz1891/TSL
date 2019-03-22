@@ -1,6 +1,10 @@
-
+#install.packages(comtradr)
+#install.packages(reshape)
+#-------------------
+#Libraries
 library(comtradr)
 library(reshape)
+#-------------------
 
 q1_AG2 <- ct_search(reporters = "all", 
                     partners = "World", 
@@ -12,4 +16,4 @@ q1_AG2 <- ct_search(reporters = "all",
 x <- data.frame(q1_AG2$reporter,q1_AG2$commodity_code,q1_AG2$trade_value_usd)
 X <- cast(x, q1_AG2.reporter ~ q1_AG2.commodity_code)
 
-write.csv(X , file = "raw_data.csv")
+#write.csv(X , file = "raw_data.csv")

@@ -1,32 +1,33 @@
-install.packages("dplyr")
-install.packages("ggplot2")
-install.packages("dendextend")
-install.packages("purrr")
-install.packages("cluster")
-
-
-
+#install.packages("dplyr")
+#install.packages("ggplot2")
+#install.packages("dendextend")
+#install.packages("purrr")
+#install.packages("cluster")
+#-------------------
+#Libraries
 library(dplyr)
 library(ggplot2)
 library(dendextend)
 library(purrr)
 library(cluster)
+#-------------------
 
-#DATA
+#DATA Normalization
 X[is.na(X)] <- 0
 dbok <- X
 db1scaled<-as.data.frame(dbok[ ,2:98])
+
+for (i in 2:ncol(dbok)){
+  dbok[,i] <- (dbok[,i] / sum(dbok[,i]))
+}
+
 #p<-colSums(dbok[ ,2:98])
-
 #for (i in range(1,97)) {
-
 #  db1scaled[ ,i]<-  db1scaled[,i]/p [i]
-  
 #}
 
+
 S <- colSums(db1scaled[ ,3:4])
-
-
 
 ##Hierarchical clustering
 distances<-dist(db1scaled)
