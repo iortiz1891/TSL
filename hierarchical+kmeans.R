@@ -16,14 +16,16 @@ library(cluster)
 X[is.na(X)] <- 0
 dbok <- X
 db1scaled<-as.data.frame(dbok[ ,2:98])
-p<-colSums(dbok[ ,2:98])
-for (i in range(1,97)) {
+#p<-colSums(dbok[ ,2:98])
 
-  db1scaled[,i]<-  db1scaled[,i]/p [i]
+#for (i in range(1,97)) {
+
+#  db1scaled[ ,i]<-  db1scaled[,i]/p [i]
   
-}
+#}
 
-colSums(db1scaled)
+S <- colSums(db1scaled[ ,3:4])
+
 
 
 ##Hierarchical clustering
