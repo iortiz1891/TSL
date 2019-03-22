@@ -3,12 +3,13 @@ library(comtradr)
 library(reshape)
 #-------------------
 
+
 # Extract raw data from UN Comtrade API
 data_AG2 <- ct_search(reporters = "all", 
                       partners = "World", 
                       trade_direction = "export",
-                      start_date = 2010,
-                      end_date = 2010,
+                      start_date = 1990,
+                      end_date = 1994,
                       commod_codes = "AG2")
 
 # Extract reporters list and code/name association
@@ -20,4 +21,4 @@ write.table(reporters, file = "reporters.txt")
 x <- data.frame(q1_AG2$reporter,q1_AG2$commodity_code,q1_AG2$trade_value_usd)
 X <- cast(x, q1_AG2.reporter ~ q1_AG2.commodity_code)
 
-#write.csv(X , file = "raw_data.csv")
+write.csv(X , file = "raw_data.csv")
