@@ -20,14 +20,15 @@ reporters <- reporters[order(reporters$code),]
 #write.table(reporters, file = "reporters.txt")
 
 #assign(paste("x", i, sep = "_"), data.frame(q1_AG2$reporter,q1_AG2$commodity_code,q1_AG2$trade_value_usd)) 
-assign(paste("X", i, sep = "_"), cast(x, q1_AG2.reporter ~ q1_AG2.commodity_code))
+X <- assign(paste("X", i, sep = "_"), cast(x, q1_AG2.reporter ~ q1_AG2.commodity_code))
 
+write.csv(X , file = paste(i, "x.csv", sep = "_"))
 }
 
 
-row.names(X)<- X$q1_AG2.reporter
-X <- X[,3:99]
-X [is.na(X)] <- 0
+#row.names(X)<- X$q1_AG2.reporter
+#X <- X[,3:99]
+#X [is.na(X)] <- 0
 
 
 #write.csv(X , file = "raw_data.csv")
