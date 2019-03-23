@@ -5,7 +5,7 @@ library(reshape)
 
 
 # Extract raw data from UN Comtrade API
-for (i in 1990:2005){
+for (i in 1990:1995){
 data_AG2 <- ct_search(reporters = "all", 
                       partners = "World", 
                       trade_direction = "export",
@@ -19,8 +19,8 @@ names(reporters) <- c("name", "code")
 reporters <- reporters[order(reporters$code),]
 #write.table(reporters, file = "reporters.txt")
 
-#assign(paste("x", i, sep = "_"), data.frame(q1_AG2$reporter,q1_AG2$commodity_code,q1_AG2$trade_value_usd)) 
-X <- assign(paste("X", i, sep = "_"), cast(x, q1_AG2.reporter ~ q1_AG2.commodity_code))
+q <- data.frame(data_AG2$reporter,data_AG2$commodity_code,data_AG2 $trade_value_usd)
+X <- assign(paste("X", i, sep = "_"), cast(q, data_AG2.reporter ~ data_AG2.commodity_code))
 
 write.csv(X , file = paste(i, "x.csv", sep = "_"))
 }
