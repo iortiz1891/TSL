@@ -1,0 +1,40 @@
+"name" "code"
+"1" "Australia" 36
+"98" "Bangladesh" 50
+"160" "Brazil" 76
+"257" "Canada" 124
+"354" "Sri Lanka" 144
+"447" "Chile" 152
+"544" "Colombia" 170
+"640" "Cyprus" 196
+"733" "Denmark" 208
+"830" "Ecuador" 218
+"910" "Finland" 246
+"1006" "Germany" 276
+"1103" "Haiti" 332
+"1168" "Iceland" 352
+"1241" "Indonesia" 360
+"1336" "Jamaica" 388
+"1422" "Japan" 392
+"1519" "Rep. of Korea" 410
+"1615" "China, Macao SAR" 446
+"1708" "Madagascar" 450
+"1801" "Malawi" 454
+"1891" "Malaysia" 458
+"1988" "Mexico" 484
+"2085" "Oman" 512
+"2168" "New Zealand" 554
+"2265" "Paraguay" 600
+"2331" "Portugal" 620
+"2428" "Romania" 642
+"2518" "Saudi Arabia" 682
+"2615" "India" 699
+"2712" "Singapore" 702
+"2809" "Spain" 724
+"2906" "Switzerland" 757
+"3002" "Thailand" 764
+"3099" "Trinidad and Tobago" 780
+"3188" "United Arab Emirates" 784
+"3243" "Tunisia" 788
+"3339" "Turkey" 792
+"3434" "USA" 842
