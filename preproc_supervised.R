@@ -19,20 +19,20 @@ total_exports <- ct_search(reporters = "all",
 countries <- distinct(total_exports, reporter_iso, reporter)
 
 # Extract raw data from UN Comtrade API
-for (y in years){
   
   # Check you are not going over the query limit (100 per hour)
   if (ct_get_remaining_hourly_queries() < 5){
     stop(paste('WARNING: Code stopped because close to hourly limit! Reset time =', ct_get_reset_time() ))
   }
-  
-  data_year <- ct_search(reporters = "all", 
+
+for(i in seq(from=1,to=nrow(countries), by=5)){
+  data_year <- ct_search(reporters = countries[i:i+4,2], 
                         partners = "World", 
                         trade_direction = "export",
-                        start_date = y,
-                        end_date = y,
-                        commod_codes = "AG2")
-  
+                        start_date = first_year,
+                        end_date = last_year,
+                        commod_codes = "AG4")
+}  
   # Build list of codes descriptions
   commodities <- distinct(data_year, commodity_code, commodity)
   
@@ -47,7 +47,7 @@ for (y in years){
    if(y>min(years)){
      df <- full_join(df,data_year) # This attaches the new "data_year" to the existing "df"
    }
-}
+
 
 # We obtain the dataset as we want it by casting df.
 # Notice that if a good [column], has no value for some year [row], the corresponing cell is NA
