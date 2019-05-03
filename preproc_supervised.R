@@ -1,15 +1,20 @@
 #-------------------
 library(comtradr)
-library(reshape)
+library(tidyr)
 library(dplyr)
 #-------------------
 
-# Selection varibles
-years = seq(from = 2000, to = 2000)
-country = "Italy"
+# Selection variables
+years = seq(from = 1995, to = 1995)
 
 # Extract raw data from UN Comtrade API
 for (y in years){
+  
+  # Check you are not going over the query limit (100 per hour)
+  if (ct_get_remaining_hourly_queries() < 5){
+    stop(paste('WARNING: Code stopped because close to hourly limit! Reset time =', ct_get_reset_time() ))
+  }
+  
   data_year <- ct_search(reporters = "all", 
                         partners = "World", 
                         trade_direction = "export",
@@ -17,8 +22,12 @@ for (y in years){
                         end_date = y,
                         commod_codes = "AG4")
   
+  # Build list of countries and codes descriptions
+  countries <- distinct(data_year, reporter_iso, reporter)
+  commodities <- distinct(data_year, commodity_code, commodity)
+  
   # Drop the columns of the dataframe
-   data_year <- select(data_year, c(reporter_iso, year, commodity_code, trade_value_usd))
+  data_year <- select(data_year, c(reporter_iso, year, commodity_code, trade_value_usd))
    
   # At the end of the "for" cycle, "df" will be the same of "data_year", with the difference that
   # it will include all the years that we want
