@@ -2,10 +2,21 @@
 library(comtradr)
 library(tidyr)
 library(dplyr)
+library(reshape)
 #-------------------
 
 # Selection variables
-years = seq(from = 1995, to = 1995)
+first_year <- 1995
+last_year <- first_year + 4 # Max years in a query is 5
+
+total_exports <- ct_search(reporters = "all", 
+                       partners = "World", 
+                       trade_direction = "export",
+                       start_date = first_year,
+                       end_date = last_year)
+
+# Build list of countries
+countries <- distinct(total_exports, reporter_iso, reporter)
 
 # Extract raw data from UN Comtrade API
 for (y in years){
@@ -20,10 +31,9 @@ for (y in years){
                         trade_direction = "export",
                         start_date = y,
                         end_date = y,
-                        commod_codes = "AG4")
+                        commod_codes = "AG2")
   
-  # Build list of countries and codes descriptions
-  countries <- distinct(data_year, reporter_iso, reporter)
+  # Build list of codes descriptions
   commodities <- distinct(data_year, commodity_code, commodity)
   
   # Drop the columns of the dataframe
