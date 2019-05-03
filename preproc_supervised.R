@@ -5,12 +5,12 @@ library(dplyr)
 #-------------------
 
 # Selection varibles
-years = seq(from = 1995, to = 2017)
+years = seq(from = 2000, to = 2000)
 country = "Italy"
 
 # Extract raw data from UN Comtrade API
 for (y in years){
-  data_year <- ct_search(reporters = country, 
+  data_year <- ct_search(reporters = "all", 
                         partners = "World", 
                         trade_direction = "export",
                         start_date = y,
@@ -18,7 +18,7 @@ for (y in years){
                         commod_codes = "AG4")
   
   # Drop the columns of the dataframe
-   data_year <- select(data_year, c(year, commodity_code, trade_value_usd))
+   data_year <- select(data_year, c(reporter_iso, year, commodity_code, trade_value_usd))
    
   # At the end of the "for" cycle, "df" will be the same of "data_year", with the difference that
   # it will include all the years that we want
@@ -32,9 +32,21 @@ for (y in years){
 
 # We obtain the dataset as we want it by casting df.
 # Notice that if a good [column], has no value for some year [row], the corresponing cell is NA
-data_alltimes <- cast(df, year ~ commodity_code)
+
+# ONE COUNTRY, MANY YEARS:
+# data_alltimes <- cast(df, year ~ commodity_code)
+
+# ALL COUNTRIES:
+data_alltimes <- cast(df, reporter_iso+year ~ commodity_code)
 
 # Labeling row names with the corresponding year and removing the first column
-row.names(data_alltimes)<- data_alltimes$year
-data_alltimes <- data_alltimes[,2:length(data_alltimes)]
+
+# row.names(data_alltimes)<- data_alltimes$year
+# data_alltimes <- data_alltimes[,2:length(data_alltimes)]
+
+# WHEN YOU HAVE ALL COUNTRIES:
+row.names(data_alltimes)<- paste(data_alltimes$reporter_iso, data_alltimes$year, sep="_")
+data_alltimes <- data_alltimes[,3:length(data_alltimes)]
+
+
 
