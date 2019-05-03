@@ -19,14 +19,14 @@ total_exports <- ct_search(reporters = "all",
 countries <- distinct(total_exports, reporter_iso, reporter)
 
 # Extract raw data from UN Comtrade API
+for(i in seq(from=1,to=nrow(countries), by=5)){
   
   # Check you are not going over the query limit (100 per hour)
   if (ct_get_remaining_hourly_queries() < 5){
     stop(paste('WARNING: Code stopped because close to hourly limit! Reset time =', ct_get_reset_time() ))
   }
-
-for(i in seq(from=1,to=nrow(countries), by=5)){
-  data_year <- ct_search(reporters = countries[i:i+4,2], 
+  
+  data_year <- ct_search(reporters = countries[i:min(i+4,nrow(countries)),2], 
                         partners = "World", 
                         trade_direction = "export",
                         start_date = first_year,
@@ -56,7 +56,7 @@ for(i in seq(from=1,to=nrow(countries), by=5)){
 # data_alltimes <- cast(df, year ~ commodity_code)
 
 # ALL COUNTRIES:
-data_alltimes <- cast(df, reporter_iso+year ~ commodity_code)
+data_alltimes <- cast(df, reporter_iso + year ~ commodity_code)
 
 # Labeling row names with the corresponding year and removing the first column
 
