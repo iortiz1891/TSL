@@ -14,6 +14,9 @@ total_exports <- ct_search(reporters = "all",
                        start_date = first_year,
                        end_date = last_year)
 
+# Exception for Macedonia
+total_exports$reporter[total_exports$reporter == "North Macedonia"] <- "TFYR of Macedonia"
+
 # Build list of countries
 countries <- distinct(total_exports, reporter_iso, reporter)
 
