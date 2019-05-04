@@ -53,7 +53,7 @@ for(i in seq(from=1,to=nrow(countries), by=5)){
 
 # Build list of codes descriptions
 commodities <- distinct(df, commodity_code, commodity)
-df <- select(df, -(commodity_code))
+df <- select(df, -(commodity))
 
 # Save df to csv
 write.csv(df, file = paste("Data/AG4", first_year, "-", last_year, ".csv", sep = ""))
