@@ -18,4 +18,4 @@ zeroes<-aggregate(casted_data[3:length(casted_data)], by=list(year=casted_data$y
 #ggplot(zeroes_melted) + geom_line(aes(x=year,y=zeroes,color=commodity_code))
 
 diff_zeroes <- (zeroes[2:nrow(zeroes),2:length(zeroes)])-(zeroes[1:nrow(zeroes)-1,2:length(zeroes)])
-media <- apply(diff_zeroes, 2, mean)
+media <- apply(diff_zeroes, 2, mean )
