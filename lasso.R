@@ -40,6 +40,7 @@ xtrain[is.na(xtrain)] <- 0
 
 #Scaling of xtrain in the naive way: centering columns at zero and dividing them by stddev
 xtrain_scaled <- scale(xtrain, center = TRUE, scale = TRUE)
+ytrain_scaled <- scale(ytrain, center = TRUE, scale = TRUE)
 
 
 #!!!!!--FROM NOW LASSO--!!!!!
@@ -52,18 +53,18 @@ train=sample(1:nrow(xtrain_scaled), nrow(xtrain_scaled)/2) #Dividing dataset in 
 test=(-train)
 
 grid=10^seq(10,-2,length=100) #Grid of lambdas
-lasso.mod=glmnet(xtrain_scaled[train,],ytrain[train,],alpha=1,lambda=grid) #Estimating betas from the train subset, at varius lambdas
+lasso.mod=glmnet(xtrain_scaled[train,],ytrain_scaled[train,],alpha=1,lambda=grid) #Estimating betas from the train subset, at varius lambdas
 #plot(lasso.mod)
 
-cv.out <- cv.glmnet(xtrain_scaled[train,],ytrain[train,],alpha=1) #Do CV on the train subset
-#plot(cv.out)
+cv.out <- cv.glmnet(xtrain_scaled[train,],ytrain_scaled[train,],alpha=1) #Do CV on the train subset
+plot(cv.out)
 bestlam=cv.out$lambda.min
 
 lasso.pred <- predict(lasso.mod,s=bestlam,newx=xtrain_scaled[test,]) #Predicts on the test subset
-#mean((lasso.pred-ytrain[test,])^2)
+mean((lasso.pred-ytrain_scaled[test,])^2)
 
 #Not so clear here
-out=glmnet(xtrain_scaled,ytrain,alpha=1,lambda=grid)
+out=glmnet(xtrain_scaled,ytrain_scaled,alpha=1,lambda=grid)
 lasso.coef=predict(out,type="coefficients",s=bestlam)[1:ncol(xtrain_scaled),]
 lasso.coef
 lasso.coef[lasso.coef!=0]
