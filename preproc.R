@@ -57,6 +57,7 @@ df <- select(df, -(commodity))
 
 # Save df to csv
 write.csv(df, file = paste("Data/AG4", first_year, "-", last_year, ".csv", sep = ""), row.names=FALSE)
+write.csv(commodities, file = paste("Data/com_names", first_year, "-", last_year, ".csv", sep = ""), row.names=FALSE)
   
 # We obtain the dataset as we want it by casting df.
 # Notice that if a good [column], has no value for some year [row], the corresponing cell is NA
