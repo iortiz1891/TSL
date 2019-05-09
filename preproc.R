@@ -21,7 +21,7 @@ total_exports$reporter[total_exports$reporter == "North Macedonia"] <- "TFYR of 
 countries <- distinct(total_exports, reporter_iso, reporter)
 
 # Extract raw data from UN Comtrade API
-print("Got for the following countries:")
+print("Got data for the following countries:")
 for(i in seq(from=1,to=nrow(countries), by=5)){
   
   # Check you are not going over the query limit (100 per hour)
@@ -56,7 +56,7 @@ commodities <- distinct(df, commodity_code, commodity)
 df <- select(df, -(commodity))
 
 # Save df to csv
-write.csv(df, file = paste("Data/AG4", first_year, "-", last_year, ".csv", sep = ""))
+write.csv(df, file = paste("Data/AG4", first_year, "-", last_year, ".csv", sep = ""), row.names=FALSE)
   
 # We obtain the dataset as we want it by casting df.
 # Notice that if a good [column], has no value for some year [row], the corresponing cell is NA
