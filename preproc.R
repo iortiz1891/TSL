@@ -21,6 +21,9 @@ total_exports$reporter[total_exports$reporter == "North Macedonia"] <- "TFYR of 
 # Build list of countries
 countries <- distinct(total_exports, reporter_iso, reporter)
 
+total_exports <- select(total_exports, c(reporter_iso, year, trade_value_usd))
+write.csv(total_exports, file = paste("Data/total", first_year, "-", last_year, ".csv", sep = ""), row.names=FALSE)
+
 # Extract raw data from UN Comtrade API
 print("Got data for the following countries:")
 for(i in seq(from=1,to=nrow(countries), by=5)){
