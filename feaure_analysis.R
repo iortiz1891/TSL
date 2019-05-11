@@ -4,7 +4,7 @@ library(dplyr)
 library(ggplot2)
 #-------------------
 
-#Uncomment the following line if you don't have saved the data frame in your workspace
+# Import data
 df <- read.csv("Data/AG41995-1999.csv", colClasses = c("character", "integer", "character", "numeric"))
 df <- bind_rows(df, read.csv("Data/AG42000-2004.csv", colClasses = c("character", "integer", "character", "numeric")))
 df$reporter_iso <- as.factor(df$reporter_iso)
@@ -37,4 +37,15 @@ ggplot(zeroes_country) + geom_histogram(aes(x = Count)) +
 ggplot(zeroes_country) + geom_density(aes(x = Count, group = year, color = as.factor(year)), bw = 0.075) +
   labs(x = "Percentage of zero exports", title = "Distribution of percentage of zero exports per country") + theme_bw()
 
+
+# Explore feature distributions
+k=round(runif(1, min = 1, max = ncol(log_data)))
+
+log_data <- log(casted_data[c(-1,-2)])
+log_data[is.na(log_data)] <- 0
+ggplot()+ geom_histogram(aes(x=log_data[[k]]))
+
+export_frac <- apply(casted_data[-1], 1, sum)
+
+ggplot()+ geom_histogram(aes(x=log(casted_data[[k]])))
 
