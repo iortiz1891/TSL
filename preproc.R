@@ -5,6 +5,7 @@ library(dplyr)
 #-------------------
 
 # Selection variables
+# ct_update_databases(commodity_type = "SITC") to get older data, check current using ct_commodity_db_type()
 first_year <- 1995
 last_year <- first_year + 4 # Max years in a query is 5
 
@@ -44,7 +45,7 @@ for(i in seq(from=1,to=nrow(countries), by=5)){
    if (i==1){
      df <- data
    } else {
-     df <- full_join(df,data) # This attaches the new "data_year" to the existing "df"
+     df <- bind_rows(df,data) # This attaches the new "data_year" to the existing "df"
    }
   
   # Status update
