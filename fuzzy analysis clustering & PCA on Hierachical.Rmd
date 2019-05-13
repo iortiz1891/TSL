@@ -1,0 +1,88 @@
+---
+title: "PCA on Hierachical"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r}
+install.packages("FactoMineR")
+install.packages("factoextra")
+
+library(FactoMineR)
+library(factoextra)
+```
+
+```{r}
+db <- new_X_2000
+row.names(db)<- db$q1_AG2.reporter
+db <- db[,2:ncol(db)]
+db [is.na(db)] <- 0
+
+#DATA Normalization
+log_Scaled=TRUE
+if (log_Scaled){
+  db<-log(db+1)
+  for (i in 2:nrow(db))
+    db[i,] <- (db[i,] - mean(db[i,]))/sd(db[i,])
+}else{
+  for (i in 1:ncol(db)){
+    db[,i] <- (db[,i] / sum(db[,i]))
+  }}
+```
+
+
+```{r}
+res.pca <- PCA(db, ncp = 10, graph = TRUE)
+get_eig(res.pca)
+```
+
+```{r}
+res.hcpc <- HCPC(res.pca, graph = FALSE)
+plot(res.hcpc, choice = "tree")
+plot(res.hcpc, choice = "3D.map", ind.names = FALSE)
+```
+
+```{r}
+res.fanny <- fanny(db, k = 6, memb.exp = 1.5, 
+                   metric = "euclidean", stand = TRUE, maxit = 500)
+print(head(res.fanny$membership),3)
+res.fanny$coeff
+```
+```{r}
+library(corrplot)
+Dunn <- res.fanny$membership^2
+```
+```{r}
+corrplot(Dunn[rev(order(rowSums(Dunn))), ], is.corr = FALSE)
+#
+library(factoextra)
+fviz_cluster(res.fanny, frame.type = "norm", frame.level = 0.5)
+```
+
+```{r}
+
+```
+
