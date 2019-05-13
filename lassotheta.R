@@ -29,11 +29,12 @@ x<-filled_data[3:ncol(filled_data)]
 x[filled_data[3:ncol(filled_data)]==0]<-1
 x[filled_data[3:ncol(filled_data)]!=0]<-0
 colnames(x)<-paste("1-theta", colnames(x), sep = "_")
+#x[] <- lapply(x, as.factor)
 
 #We merge these two datasets, after the logarithm of the first one has been taken
 log_filled_data<-filled_data
 log_filled_data[3:ncol(log_filled_data)]<- log(log_filled_data[3:ncol(log_filled_data)]+1)
-filled_data_theta <- bind_cols(filled_data,x)
+filled_data_theta <- bind_cols(log_filled_data,x)
 
 #data_theta_gdp is structured as follows:
 #[1:2] reporter_iso and year
@@ -50,14 +51,18 @@ data_theta_grw <- na.omit(left_join(filled_data_theta, grw, by=c("reporter_iso",
 
 #Now, LASSO
 #GDP
-xtrain_gdp <- select(data_theta_gdp, -c("reporter_iso","year"))
+xtrain_gdp <- select(data_theta_gdp, -c("reporter_iso","year","gdp"))
 xtrain_gdp <- as.matrix(xtrain_gdp)
 ytrain_gdp <- data.matrix(log(data_theta_gdp[[ncol(data_theta_gdp)]]))
-grid=10^seq(10,-2,length=100) #Grid of lambdas
+grid=10^seq(1, -3,length=100) #Grid of lambdas
 lasso_gdp=glmnet(xtrain_gdp,ytrain_gdp, alpha=1,lambda=grid) #Estimating betas, at varius lambdas
-plot(lasso_gdp)
+plot(lasso_gdp, "norm", label = TRUE)
+plot(lasso_gdp, "lambda", label = TRUE)
+plot(lasso_gdp, "dev", label = TRUE)
+
 cv_gdp <- cv.glmnet(xtrain_gdp,ytrain_gdp,alpha=1) #Do CV
 plot(cv_gdp)
+
 bestlam_gdp=cv_gdp$lambda.min
 lasso_coef_gdp=predict(lasso_gdp,type="coefficients",s=bestlam_gdp)[1:ncol(xtrain_gdp),]
 
