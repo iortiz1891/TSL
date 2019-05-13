@@ -54,13 +54,13 @@ data_theta_grw <- na.omit(left_join(filled_data_theta, grw, by=c("reporter_iso",
 xtrain_gdp <- select(data_theta_gdp, -c("reporter_iso","year","gdp"))
 xtrain_gdp <- as.matrix(xtrain_gdp)
 ytrain_gdp <- data.matrix(log(data_theta_gdp[[ncol(data_theta_gdp)]]))
-grid=10^seq(1, -3,length=100) #Grid of lambdas
-lasso_gdp=glmnet(xtrain_gdp,ytrain_gdp, alpha=1,lambda=grid) #Estimating betas, at varius lambdas
+grid=10^seq(2, -3,length=100) #Grid of lambdas
+lasso_gdp=glmnet(xtrain_gdp, ytrain_gdp, alpha=1, lambda=grid, standardize = FALSE) #Estimating betas, at varius lambdas
 plot(lasso_gdp, "norm", label = TRUE)
 plot(lasso_gdp, "lambda", label = TRUE)
 plot(lasso_gdp, "dev", label = TRUE)
 
-cv_gdp <- cv.glmnet(xtrain_gdp,ytrain_gdp,alpha=1) #Do CV
+cv_gdp <- cv.glmnet(xtrain_gdp, ytrain_gdp, alpha=1, standardize = FALSE) #Do CV
 plot(cv_gdp)
 
 bestlam_gdp=cv_gdp$lambda.min
