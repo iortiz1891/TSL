@@ -1,0 +1,156 @@
+##CLUSTERING-
+
+### Upload libraries
+```{r}
+library(comtradr)
+library(reshape)
+library(plyr)
+library(purrr)
+library(cluster)
+library(factoextra)
+library("NbClust")
+library("clValid")
+```
+
+### Extract raw data from UN Comtrade API - EXPORT
+```{r}
+data_AG2 <- ct_search(reporters = "all", 
+                      partners = "World", 
+                      trade_direction = "export",
+                      start_date = 2000,
+                      end_date = 2000,
+                      commod_codes = "AG2")
+```
+
+### Create databases- 
+```{r}
+for (i in 2000){
+  data_AG2 <- ct_search(reporters = "all", 
+                        partners = "World", 
+                        trade_direction = "export",
+                        start_date = 2000,
+                        end_date = 2000,
+                        commod_codes = "AG2")
+  
+  # Extract reporters list and code/name association
+  reporters <- unique(data.frame(data_AG2$reporter, data_AG2$reporter_code))
+  names(reporters) <- c("name", "code")
+  reporters <- reporters[order(reporters$code),]
+  commodity <- unique(data.frame(data_AG2$commodity, data_AG2$commodity_code))
+  #write.table(reporters, file = "reporters.txt")
+  
+  q <- data.frame(data_AG2$reporter,data_AG2$commodity_code,data_AG2 $trade_value_usd)
+  X <- assign(paste("X", i, sep = "_"), cast(q, data_AG2.reporter ~ data_AG2.commodity_code))
+  
+  #write.csv(X , file = paste(i, "x.csv", sep = "_"))
+}
+```
+
+### Scale data
+```{r}
+year<- list(X_2000)
+counter=0
+tot_withinss_vec=list()
+for (y in year){
+  counter=counter+1
+  db <- y
+  row.names(db)<- db$data_AG2.reporter
+  db <- db[,2:ncol(db)]
+  db [is.na(db)] <- 0
+  
+  log_Scaled=FALSE
+  if (log_Scaled){
+    db<-log(db+1)
+    for (i in 1:nrow(db))
+      db[i,] <- (db[i,] - mean(db[i,]))/sd(db[i,])
+  }else{
+    for (i in 1:nrow(db)){
+      db[i,] <- (db[i,] / sum(db[i,]))
+    }}
+}
+```
+
+### db-structure
+```{r}
+head(db)
+```
+
+```{r}
+sum(db)
+```
+
+### PRELIMINARY VISUALIZATIONS
+#### get_dist(): Computes a distance matrix between the rows of a data matrix. Compared to the standard dist() function, it supports correlation-based distance measures including "pearson", "kendall" and "spearman" methods.
+#### fviz_dist(): Visualizes a distance matrix
+
+```{r}
+res.dist1 <- get_dist(db, stand = FALSE, method = "pearson")
+fviz_dist(res.dist1, gradient = list(low = "#00AFBB", mid = "white", high = "#FC4E07"), lab_size=2)
+```
+
+### CLUST TENDENCY
+#### Before applying cluster methods, the first step is to assess whether the data is clusterable, a process defined as the assessing of clustering tendency. get_clust_tendency() assesses clustering tendency using Hopkins' statistic and a visual approach. An ordered dissimilarity image (ODI) is shown. Objects belonging to the same cluster are displayed in consecutive order using hierarchical clustering.
+```{r}
+get_clust_tendency(db[,1:97], n = 165, graph= TRUE,
+                   gradient = list(low = "black",  high = "white"), seed=123)
+```
+
+### DETERMINATION OF NUMBER OF CLUSTERS
+#### Using elbow
+```{r}
+fviz_nbclust(db, kmeans, method = "wss")
+```
+
+#### Using average silhouette
+```{r}
+fviz_nbclust(db, kmeans, method = "silhouette")
+```
+
+#### Using gap statistic
+```{r}
+fviz_nbclust(db, kmeans, method = "gap_stat")
+```
+
+
+
+#### Using 30 different index
+```{r}
+#The D index is a graphical method of determining the number of clusters. In the plot of D index, we seek a significant knee (the significant peak in Dindex second differences plot) that corresponds to a significant increase of the value of the measure. 
+
+res.nbclust <- NbClust(db[,2:97], distance = "euclidean",
+                       min.nc = 2, max.nc = 15, 
+                       method = "kmeans", index ="all") 
+```
+
+```{r}
+km.res <- kmeans(db, 2)
+fviz_cluster(km.res, data = db, frame.type = "convex", labelsize=5)
+```
+
+
+```{r}
+sil <- silhouette(km.res$cluster, dist(db))
+fviz_silhouette(sil)
+```
+
+
+```{r}
+## stability measures
+stab <- clValid(express, 2:15, clMethods=c("hierarchical","kmeans","pam"),
+                validation="stability")
+optimalScores(stab)
+plot(stab)
+```
+
+```{r}
+# Compute clValid
+
+db1<-as.matrix(db)
+intern1 <- clValid(db1, nClust = 2:10, 
+              clMethods = c("kmeans", "hierarchical", "pam"),
+              validation = "internal")
+# Summary
+summary(intern1)
+plot(intern1)
+```
+
