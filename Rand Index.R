@@ -2,7 +2,7 @@
 memory.size(max = FALSE)
 memory.limit(size = FALSE)
 
-###Data loading
+###Data loading for 1st
 db <- new_X_1996
 row.names(db)<- db$q1_AG2.reporter
 db <- db[,2:ncol(db)]
@@ -26,9 +26,9 @@ db_km_1<- mutate(db, cluster=clust_km_1)
 M_1 <- c(db_km_1[1:102,"cluster"])
 #identity_matrix_km_1 <- diag(M_1)
 
-#n_new[,"n"]
+#________________________________________________
   
-  ###Data loading
+  ###Data loading for 2nd
   db <- new_X_2005
   row.names(db)<- db$q1_AG2.reporter
   db <- db[,2:ncol(db)]
@@ -52,16 +52,15 @@ db_km_2<- mutate(db, cluster=clust_km_2)
 M_2 <- c(db_km_2[1:102,"cluster"])
 #M_2 <- c(db_km_2["cluster"])
 #identity_matrix_km_2 <- diag(M_2)
-print(db_km_2)
+
+#____________________________________________________
 
 ###Rand Index calculation
 #RI <- rand.index(identity_matrix_km_1, identity_matrix_km_2)
 #ARI <- adj.rand.index(identity_matrix_km_1, identity_matrix_km_2)
 RI <- rand.index(M_1, M_2)
 ARI <- adj.rand.index(M_1, M_2)
-print(RI)
-print(ARI)
-
+print(RI, ARI)
 
 
 g1 <- c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
