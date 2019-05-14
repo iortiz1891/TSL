@@ -53,9 +53,9 @@ plot(lasso_gdp, "dev", label = TRUE)
 cv_gdp <- cv.glmnet(xtrain_gdp, ytrain_gdp, alpha=1, standardize = TRUE, nfolds = 10) #Do CV
 plot(cv_gdp)
 
-bestlam_gdp <- cv_gdp$lambda.min
-lasso_coef_gdp <- predict(lasso_gdp, type="coefficients", s=bestlam_gdp)[1:ncol(xtrain_gdp),]
-coef(cv_gdp, s = "lambda.1se")
+bestlam_gdp=cv_gdp$lambda.1se
+lasso_coef_gdp=predict(lasso_gdp,type="coefficients",s=bestlam_gdp)[1:ncol(xtrain_gdp),]
+print(lasso_coef_gdp[lasso_coef_gdp != 0])
 
 # GRW
 xtrain_grw <- as.matrix(select(data_grw, -c("reporter_iso","year","growth")))
@@ -71,8 +71,7 @@ plot(cv_grw)
 
 bestlam_grw <- cv_grw$lambda.1se
 lasso_coef_grw <- predict(lasso_grw, type="coefficients", s=bestlam_grw)[1:ncol(xtrain_grw),]
-significant <- coef(cv_grw, s = "lambda.1se")
-print(cv_grw)
+print(lasso_coef_grw[lasso_coef_grw != 0])
 
 
 
