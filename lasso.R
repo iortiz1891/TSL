@@ -1,74 +1,78 @@
 #-------------------
-library(glmnet)
 library(tidyr)
 library(dplyr)
+library(ggplot2)
+library(glmnet)
 #-------------------
 
+# Import data from csv
+df <- read.csv("Data/AG41995-1999.csv", colClasses = c("character", "integer", "character", "numeric"))
+df <- bind_rows(df, read.csv("Data/AG42000-2004.csv", colClasses = c("character", "integer", "character", "numeric")))
 
-#Uncomment the following line if you don't have saved the data frame in your workspace
-#df <- read.csv("Data/AG41995-1999.csv")
+# Cast data to wide form in order to fill the NA with 0
+filled_data <- spread(df, key="commodity_code", value = "trade_value_usd")
+filled_data[is.na(filled_data)] <- 0
 
-#Casting df 
-casted_data <- spread(df, key="commodity_code", value = "trade_value_usd")
-#Joining reporter_iso and year into one column
-casted_data <- unite(casted_data, "reporter_iso", "year", col = "reporter_iso", sep = "_")
-
-
-#Selecting only the interesting columns in GDP: !!!has to be made general!!!
-selected_gdp <- select(gdp, 1, grep("1995", colnames(gdp)):grep("1999", colnames(gdp)))
-
-#Making the GDP dataframe coherent with the Exports' one
+# Select gdp data for the same period and normalize by log
+selected_gdp <- select(gdp, 1, "1995":"2004")
 selected_gdp <- gather(selected_gdp, 2:length(selected_gdp), key="year", value = "gdp")
-selected_gdp <- unite(selected_gdp, "Country", "year", col = "reporter_iso", sep = "_")
-
-#Removing NA raws, i.e. countries and years for which we don't have the GDP information
+colnames(selected_gdp)[1] <- "reporter_iso"
 selected_gdp <- na.omit(selected_gdp)
 
-#casted_data and selected_gdp have very different number of observation: the following is done to fix this problem
-row.names(selected_gdp)<- selected_gdp$reporter_iso
-row.names(casted_data)<- casted_data$reporter_iso
-common_observation <- intersect(casted_data[,1],selected_gdp[,1])
+# Compute growth data
+grw <- (- gdp[2:(ncol(gdp)-1)] + gdp[3:ncol(gdp)]) / gdp[2:(ncol(gdp)-1)]
+grw["reporter_iso"] <- gdp$Country
+grw <- grw[c(length(grw), 1:length(grw)-1)]
+selected_grw <- select(grw, 1, "1995":"2004")
+selected_grw <- na.omit(gather(selected_grw, 2:ncol(selected_grw), key = "year", value = "growth"))
 
+# Normalize by taking the logarithm
+filled_data[3:ncol(filled_data)]<- log(filled_data[3:ncol(filled_data)] + 1)
+selected_gdp$gdp <- log(selected_gdp$gdp + 1)
 
-xtrain <- select(casted_data[common_observation, ], -c("reporter_iso"))
-ytrain <- select(selected_gdp[common_observation, ], gdp)
-#As far as i have understood, glmnet takes matrix instead of dataframes as argument
-xtrain <- data.matrix(xtrain)
-ytrain <- data.matrix(ytrain)
-#Setting NA in predictors at 0 (NA means that that good as not been exported that year by that country)
-xtrain[is.na(xtrain)] <- 0
+# Join gdp and trade data
+selected_gdp$year <- as.factor(selected_gdp$year)
+selected_gdp$reporter_iso <- as.character(selected_gdp$reporter_iso)
+filled_data$year <- as.factor(filled_data$year)
+data_gdp <- na.omit(left_join(filled_data, selected_gdp, by=c("reporter_iso","year")))
 
-#Scaling of xtrain in the naive way: centering columns at zero and dividing them by stddev
-xtrain_scaled <- scale(xtrain, center = TRUE, scale = TRUE)
-ytrain_scaled <- scale(ytrain, center = TRUE, scale = TRUE)
+selected_grw$year <- as.factor(selected_grw$year) 
+selected_grw$reporter_iso <- as.character(selected_grw$reporter_iso)
+data_grw <- na.omit(left_join(filled_data, selected_grw, by=c("reporter_iso","year")))
 
+# Now, LASSO
+# GDP
+xtrain_gdp <- as.matrix(select(data_gdp, -c("reporter_iso","year","gdp")))
+ytrain_gdp <- as.matrix(select(data_gdp, "gdp"))
+grid=10^seq(3, -5,length=100) #Grid of lambdas
+lasso_gdp=glmnet(xtrain_gdp, ytrain_gdp, alpha=1, lambda=grid, standardize = TRUE) #Estimating betas, at varius lambdas
+plot(lasso_gdp, "norm", label = TRUE)
+plot(lasso_gdp, "lambda", label = TRUE)
+plot(lasso_gdp, "dev", label = TRUE)
 
-#!!!!!--FROM NOW LASSO--!!!!!
+cv_gdp <- cv.glmnet(xtrain_gdp, ytrain_gdp, alpha=1, standardize = TRUE, nfolds = 10) #Do CV
+plot(cv_gdp)
 
+bestlam_gdp <- cv_gdp$lambda.min
+lasso_coef_gdp <- predict(lasso_gdp, type="coefficients", s=bestlam_gdp)[1:ncol(xtrain_gdp),]
+coef(cv_gdp, s = "lambda.1se")
 
-#Dividing our train dataset in "train" and "test", at random. We need this to pick lambda.
-#Later, we will use this whole dataset as training set, and the "test" ones will be the future years
-set.seed(10)
-train=sample(1:nrow(xtrain_scaled), nrow(xtrain_scaled)/2) #Dividing dataset in two subsets of equal number of observations, at random
-test=(-train)
+# GRW
+xtrain_grw <- as.matrix(select(data_grw, -c("reporter_iso","year","growth")))
+ytrain_grw <- as.matrix(select(data_grw, c("growth")))
+grid = 10^seq(2, -6,length=100) #Grid of lambdas
+lasso_grw = glmnet(xtrain_grw, ytrain_grw, alpha=1, lambda=grid, standardize = TRUE) #Estimating betas, at varius lambdas
+plot(lasso_grw, "norm", label = TRUE)
+plot(lasso_grw, "lambda", label = TRUE)
+plot(lasso_grw, "dev", label = TRUE)
 
-grid=10^seq(10,-2,length=100) #Grid of lambdas
-lasso.mod=glmnet(xtrain_scaled[train,],ytrain_scaled[train,],alpha=1,lambda=grid) #Estimating betas from the train subset, at varius lambdas
-#plot(lasso.mod)
+cv_grw <- cv.glmnet(xtrain_grw, ytrain_grw, alpha=1, standardize = TRUE, nfolds = 5) #Do CV
+plot(cv_grw)
 
-cv.out <- cv.glmnet(xtrain_scaled[train,],ytrain_scaled[train,],alpha=1) #Do CV on the train subset
-plot(cv.out)
-bestlam=cv.out$lambda.min
-
-lasso.pred <- predict(lasso.mod,s=bestlam,newx=xtrain_scaled[test,]) #Predicts on the test subset
-mean((lasso.pred-ytrain_scaled[test,])^2)
-
-#Not so clear here
-out=glmnet(xtrain_scaled,ytrain_scaled,alpha=1,lambda=grid)
-lasso.coef=predict(out,type="coefficients",s=bestlam)[1:ncol(xtrain_scaled),]
-lasso.coef
-lasso.coef[lasso.coef!=0]
-
+bestlam_grw <- cv_grw$lambda.1se
+lasso_coef_grw <- predict(lasso_grw, type="coefficients", s=bestlam_grw)[1:ncol(xtrain_grw),]
+significant <- coef(cv_grw, s = "lambda.1se")
+print(cv_grw)
 
 
 
