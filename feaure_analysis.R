@@ -80,9 +80,11 @@ ggplot(data = data) + geom_point(aes(x = log(`2204` + 1), y = log(gdp + 1), grou
 tot_exp$year <- as.factor(tot_exp$year)
 tot_exp_gdp <- na.omit(left_join(tot_exp, selected_gdp, by=c("reporter_iso","year")))
 
-ggplot(tot_exp_gdp) + geom_point(aes(x = trade_value_usd, y = gdp, group = year, colour = year)) + theme_bw()
+ggplot(tot_exp_gdp) + geom_point(aes(x = trade_value_usd, y = gdp, group = year, colour = year)) + 
+  labs(x = "Total exports", title = "Total exports vs gdp") + theme_bw()
 
-ggplot(tot_exp_gdp) + geom_point(aes(x = log(trade_value_usd + 1), y = log(gdp + 1), group = year, colour = year)) + theme_bw()
+ggplot(tot_exp_gdp) + geom_point(aes(x = log(trade_value_usd + 1), y = log(gdp + 1), group = year, colour = year)) + 
+  labs(x = "Total exports", title = "Total exports vs gdp in log") + theme_bw()
 
 # Plot GDP growth vs Tot Exp
 grw <- (- gdp[2:(ncol(gdp)-1)] + gdp[3:ncol(gdp)]) / gdp[2:(ncol(gdp)-1)]

@@ -26,10 +26,6 @@ grw <- grw[c(length(grw), 1:length(grw)-1)]
 selected_grw <- select(grw, 1, "1995":"2004")
 selected_grw <- na.omit(gather(selected_grw, 2:ncol(selected_grw), key = "year", value = "growth"))
 
-# Normalize by taking the logarithm
-filled_data[3:ncol(filled_data)]<- log(filled_data[3:ncol(filled_data)] + 1)
-selected_gdp$gdp <- log(selected_gdp$gdp + 1)
-
 # Join gdp and trade data
 selected_gdp$year <- as.factor(selected_gdp$year)
 selected_gdp$reporter_iso <- as.character(selected_gdp$reporter_iso)
@@ -40,22 +36,32 @@ selected_grw$year <- as.factor(selected_grw$year)
 selected_grw$reporter_iso <- as.character(selected_grw$reporter_iso)
 data_grw <- na.omit(left_join(filled_data, selected_grw, by=c("reporter_iso","year")))
 
-# Now, LASSO
-# GDP
+# Standardize features
 xtrain_gdp <- as.matrix(select(data_gdp, -c("reporter_iso","year","gdp")))
 ytrain_gdp <- as.matrix(select(data_gdp, "gdp"))
-grid=10^seq(3, -5,length=100) #Grid of lambdas
-lasso_gdp=glmnet(xtrain_gdp, ytrain_gdp, alpha=1, lambda=grid, standardize = TRUE) #Estimating betas, at varius lambdas
+
+if (TRUE){
+  xtrain_gdp <- log(xtrain_gdp + 1)
+  ytrain_gdp <- log(ytrain_gdp + 1)
+  grid=10^seq(2, -3,length=100) #Grid of lambdas
+} else{
+  grid=10^seq(25, 1,length=100) #Grid of lambdas
+}
+
+# Now, LASSO
+# GDP
+lasso_gdp=glmnet(xtrain_gdp, ytrain_gdp, alpha=1, lambda=grid, standardize = FALSE) #Estimating betas, at varius lambdas
 plot(lasso_gdp, "norm", label = TRUE)
 plot(lasso_gdp, "lambda", label = TRUE)
 plot(lasso_gdp, "dev", label = TRUE)
 
-cv_gdp <- cv.glmnet(xtrain_gdp, ytrain_gdp, alpha=1, standardize = TRUE, nfolds = 10) #Do CV
+cv_gdp <- cv.glmnet(xtrain_gdp, ytrain_gdp, alpha=1, standardize = FALSE, nfolds = 10) #Do CV
 plot(cv_gdp)
 
 bestlam_gdp=cv_gdp$lambda.1se
-lasso_coef_gdp=predict(lasso_gdp,type="coefficients",s=bestlam_gdp)[1:ncol(xtrain_gdp),]
-print(lasso_coef_gdp[lasso_coef_gdp != 0])
+lasso_coef_gdp=predict(cv_gdp,type="coefficients",s=bestlam_gdp)[1:ncol(xtrain_gdp),]
+lasso_gdp = glmnet(xtrain_gdp, ytrain_gdp, alpha=1, lambda=bestlam_gdp, standardize = FALSE) 
+print(lasso_gdp)
 
 # GRW
 xtrain_grw <- as.matrix(select(data_grw, -c("reporter_iso","year","growth")))

@@ -34,10 +34,8 @@ dummies[filled_data[3:ncol(filled_data)] != 0] <- 0
 colnames(dummies) <- paste("1-theta", colnames(dummies), sep = "_")
 #dummies[] <- lapply(dummies, as.factor)
 
-# We merge these two datasets, and normalize by taking the logarithm
-filled_data[3:ncol(filled_data)]<- log(filled_data[3:ncol(filled_data)] + 1)
+# We merge these two datasets
 filled_data_theta <- bind_cols(filled_data, dummies)
-selected_gdp$gdp <- log(selected_gdp$gdp)
 
 # data_theta_gdp is structured as follows:
 # [1:2] reporter_iso and year
@@ -58,7 +56,15 @@ data_theta_grw <- na.omit(left_join(filled_data_theta, selected_grw, by=c("repor
 #GDP
 xtrain_gdp <- as.matrix(select(data_theta_gdp, -c("reporter_iso","year","gdp")))
 ytrain_gdp <- as.matrix(select(data_theta_gdp, c("gdp")))
-grid = 10^seq(2, -5,length=100) #Grid of lambdas
+
+if (TRUE){
+  xtrain_gdp <- log(xtrain_gdp + 1)
+  ytrain_gdp <- log(ytrain_gdp + 1)
+  grid=10^seq(2, -5,length=100) #Grid of lambdas
+} else{
+  grid=10^seq(10, 1,length=100) #Grid of lambdas
+}
+
 lasso_gdp = glmnet(xtrain_gdp, ytrain_gdp, alpha=1, lambda=grid, standardize = FALSE) #Estimating betas, at varius lambdas
 plot(lasso_gdp, "norm", label = TRUE)
 plot(lasso_gdp, "lambda", label = TRUE)
@@ -68,8 +74,10 @@ cv_gdp <- cv.glmnet(xtrain_gdp, ytrain_gdp, alpha=1, standardize = FALSE) #Do CV
 plot(cv_gdp)
 
 bestlam_gdp=cv_gdp$lambda.1se
-lasso_coef_gdp=predict(lasso_gdp,type="coefficients",s=bestlam_gdp)[1:ncol(xtrain_gdp),]
+lasso_coef_gdp=predict(cv_gdp,type="coefficients",s=bestlam_gdp)[1:ncol(xtrain_gdp),]
 print(lasso_coef_gdp[lasso_coef_gdp != 0])
+lasso_gdp = glmnet(xtrain_gdp, ytrain_gdp, alpha=1, lambda=bestlam_gdp, standardize = FALSE) 
+print(lasso_gdp)
 
 # GRW
 xtrain_grw <- as.matrix(select(data_theta_grw, -c("reporter_iso","year","growth")))
