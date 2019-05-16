@@ -78,8 +78,22 @@ group<-as.integer(group)
 #GDP
 xtrain_gdp <- as.matrix(select(data_theta_gdp, -c("reporter_iso","year","gdp")))
 ytrain_gdp <- as.matrix(select(data_theta_gdp, c("gdp")))
-grid = 10^seq(2, -5,length=100) #Grid of lambdas
-#gglasso_gdp = gglasso(xtrain_gdp, ytrain_gdp, group=group, lambda = grid)
+if (TRUE){
+  xtrain_gdp <- log(xtrain_gdp + 1)
+  ytrain_gdp <- log(ytrain_gdp + 1)
+ # grid=10^seq(2, -5,length=100) #Grid of lambdas
+} else{
+ # grid=10^seq(10, 1,length=100) #Grid of lambdas
+}
+gglasso_gdp = gglasso(xtrain_gdp, ytrain_gdp, group=group)
 cv_gdp=cv.gglasso(xtrain_gdp, ytrain_gdp, group=group, nfold=5)
-coef(cv_gdp,s=c("lambda.1se","lambda.min"))!=0
+prova=gglasso(xtrain_gdp, ytrain_gdp, group=group, lambda = cv_gdp$lambda.1se)
+
+print(prova)
+k<-unique(str_extract(rownames(prova$beta)[(1:ncol(xtrain_gdp))[prova$beta!=0]], "\\d{1,2}"))
+print(k)
+
+#print(prova)
+
 plot(cv_gdp)
+

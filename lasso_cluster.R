@@ -42,7 +42,7 @@ data_theta_gdp <- na.omit(left_join(filled_data_theta, selected_gdp, by=c("repor
 
 # Get cluster information
 clust <- read.csv("Data/OOUT.csv", col.names = c("reporter_iso", "cluster"))
-data_clust <- left_join(clust, data_theta_gdp, by = "reporter_iso")
+data_clust <- na.omit(left_join(clust, data_theta_gdp, by = "reporter_iso"))
 
 # LASSO
 for (c in unique(clust$cluster)){
